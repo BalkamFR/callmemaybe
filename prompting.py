@@ -5,6 +5,7 @@ def format_tools(tools: dict) -> str:
     return json.dumps(tools, indent=2)
 
 
+
 def build_prompt(user_prompt: str, tools_text: str) -> str:
     return (
         "You are a helpful assistant with access to the following tools.\n"
