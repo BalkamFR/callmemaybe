@@ -1,3 +1,6 @@
+export HF_HOME := /goinfre/$(USER)/hf-cache
+export UV_CACHE_DIR := /goinfre/$(USER)/uv-cache
+
 UV := uv
 
 .PHONY: all install run debug clean lint lint-strict
@@ -8,10 +11,10 @@ install:
 	$(UV) sync
 
 run:
-	$(UV) run python -m src
+	$(UV) run python main.py
 
 debug:
-	$(UV) run python -m pdb -m src
+	$(UV) run python -m pdb main.py
 
 clean:
 	rm -rf __pycache__ */__pycache__ */*/__pycache__
