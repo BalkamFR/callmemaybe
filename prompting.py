@@ -6,7 +6,7 @@ def format_tools(tools: dict) -> str:
 
 
 
-def build_prompt(user_prompt: str, tools_text: str) -> str:
+def build_prompt_find_function(user_prompt: str, tools_text: str) -> str:
     return (
         "You are a helpful assistant with access to the following tools.\n"
         "Choose the appropriate tool to answer the user request.\n\n"
@@ -14,3 +14,4 @@ def build_prompt(user_prompt: str, tools_text: str) -> str:
         f"User: {user_prompt}\n"
         'Assistant: {"name": "'
     )
+
