@@ -1,10 +1,14 @@
-def mask_logits(all_logits: list[float], allowed_tokens: list[int]) -> list[float]:
+def mask_logits(
+        all_logits: list[float],
+        allowed_tokens: list[int]) -> list[float]:
     masked_logits = [-float("inf")] * len(all_logits)
     for token_id in allowed_tokens:
         masked_logits[token_id] = all_logits[token_id]
     return masked_logits
 
-def get_allowed_next_tokens( all_encodings: list[list[int]],  current_tokens: list[int] ) -> list[int]:
+
+def get_allowed_next_tokens(
+        all_encodings: list[list[int]], current_tokens: list[int]) -> list[int]:
     allowed_tokens: list[int] = []
     generated_count = len(current_tokens)
 

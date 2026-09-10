@@ -49,7 +49,10 @@ def setup_workspace() -> None:
         subprocess.run(["uv", "sync"], env=env, check=True, cwd=project_dir)
         print("\n✅ Environnement prêt et synchronisé sur ce poste !")
     except subprocess.CalledProcessError as err:
-        print(f"\n❌ Erreur lors de uv sync (code {err.returncode})", file=sys.stderr)
+        print(
+            f"\n❌ Erreur lors de uv sync (code {
+                err.returncode})",
+            file=sys.stderr)
         sys.exit(err.returncode)
 
 

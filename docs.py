@@ -84,4 +84,3 @@ path = model.get_path_to_vocab_file() -> str
 #   },
 #   ...
 # ]
-
