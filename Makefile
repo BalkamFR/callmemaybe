@@ -1,6 +1,3 @@
-export HF_HOME := /goinfre/$(USER)/hf-cache
-export UV_CACHE_DIR := /goinfre/$(USER)/uv-cache
-
 UV := uv
 
 .PHONY: all install run debug clean lint lint-strict
@@ -20,6 +17,12 @@ clean:
 	rm -rf __pycache__ */__pycache__ */*/__pycache__
 	rm -rf .mypy_cache .pytest_cache
 	rm -rf data/output/*
+
+fclean:
+	rm -rf __pycache__ */__pycache__ */*/__pycache__
+	rm -rf .mypy_cache .pytest_cache
+	rm -rf data/output/*
+	rm -rf .venv/
 
 lint:
 	$(UV) run flake8 .
