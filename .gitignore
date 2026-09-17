@@ -15,3 +15,5 @@ output/
 .DS_Store
 .vscode/
 .idea/
+
+*.pdf

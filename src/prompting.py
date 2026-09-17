@@ -1,17 +1,31 @@
+from typing import Any
 import json
 
 
-def format_tools(tools: dict) -> str:
+def format_tools(tools: dict[str, Any]) -> str:
+    """Serialize the available tools as a pretty-printed JSON string."""
     return json.dumps(tools, indent=2)
 
+
 def build_prompt_find_function(user_prompt: str, tools_text: str) -> str:
+    """Build the few-shot prompt used to pick a tool name for a request.
+
+    Args:
+        user_prompt: The natural-language request from the user.
+        tools_text: JSON-formatted description of the available tools.
+
+    Returns:
+        The full prompt, ending right after the opening
+        ``{"name": "`` so the model only has to complete the name.
+    """
     fallback_tool_desc = (
         "- fn_none: Use this function when no other tool matches."
     )
 
     return (
         "You are an expert assistant with access to tools. "
-        "Select the correct tool and extract parameters exactly from the user.\n"
+        "Select the correct tool and extract parameters "
+        "exactly from the user.\n"
         "Rules:\n"
         "1. If no tool matches, select 'fn_none'.\n"
         "2. Extract values verbatim from the prompt.\n"
