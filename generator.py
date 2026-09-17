@@ -95,33 +95,39 @@ def clean_json_output(raw_text: str) -> str:
     except Exception:
         return extracted_json
 
-
 def generate_tool_call(
         user_prompt,
         model: Small_LLM_Model,
         fonction_allow,
         tools):
     function_tokens = []
-    number_tokens = []
-    tools_text = format_tools(tools)
 
-    # print(fonction_allow)
+    local_allow = list(fonction_allow)
+    none_encoding = encoding_fonction(model, "fn_none")
+    if none_encoding not in local_allow:
+        local_allow.append(none_encoding)
+
+    tools_text = format_tools(tools)
     tensor_ids = model.encode(
-        build_prompt_find_function(
-            user_prompt, tools_text))
+        build_prompt_find_function(user_prompt, tools_text)
+    )
     current_ids = tensor_ids[0].tolist()
+
     for _ in range(100):
         logits = model.get_logits_from_input_ids(current_ids)
-        allowed_tokens = get_allowed_next_tokens(
-            fonction_allow, function_tokens)
+        allowed_tokens = get_allowed_next_tokens(local_allow, function_tokens)
         if not allowed_tokens:
             break
         final_logit = mask_logits(logits, allowed_tokens)
         token_id = int(np.argmax(final_logit))
         current_ids.append(token_id)
         function_tokens.append(token_id)
+
     tool_name = model.decode(function_tokens)
-    print(tool_name)
+
+    if tool_name == "fn_none" or tool_name not in tools:
+        return "error"
+
     properties = tools[tool_name]
     number_tokens = all_numbers_tokens(model)
     param_keys = list(properties.keys())
@@ -129,11 +135,8 @@ def generate_tool_call(
     params_start_idx = len(current_ids)
     for idx, param_name in enumerate(param_keys):
         current_ids.extend(encoding_fonction(model, f'"{param_name}": '))
-        if properties[param_name]["type"] == "number" or properties[param_name]["type"] == "integer":
-            if idx != len(param_keys) - 1:
-                stop_char = ","
-            else:
-                stop_char = "}"
+        if properties[param_name]["type"] in ("number", "integer"):
+            stop_char = "," if idx != len(param_keys) - 1 else "}"
             stop_token_id = encoding_fonction(model, stop_char)[0]
             allowed_tokens = number_tokens + [stop_token_id]
             for _ in range(20):
@@ -143,9 +146,8 @@ def generate_tool_call(
                 current_ids.append(token_id)
                 if token_id == stop_token_id:
                     break
-        if properties[param_name]["type"] == "string":
+        elif properties[param_name]["type"] == "string":
             current_ids.extend(encoding_fonction(model, '"'))
-            stop_token_id = encoding_fonction(model, '"')[0]
             for _ in range(50):
                 logits = model.get_logits_from_input_ids(current_ids)
                 token_id = int(np.argmax(logits))
@@ -156,6 +158,7 @@ def generate_tool_call(
                 current_ids.extend(encoding_fonction(model, ", "))
             else:
                 current_ids.extend(encoding_fonction(model, "}"))
+
     params_json = model.decode(current_ids[params_start_idx:])
     if properties[param_name]["type"] == "number":
         final_prompt = f'{{"name": "{tool_name}", "parameters": {{{convert_float(params_json)}}}'

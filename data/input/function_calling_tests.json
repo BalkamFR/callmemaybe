@@ -3,10 +3,10 @@
     "prompt": ""
   },
   {
-    "prompt": "What is the product of 12 and 4?"
+    "prompt": "What is the product of \"12 and 4?"
   },
   {
-    "prompt": "Is 4 an even number?"
+    "prompt": "Is -4 an even number?"
   },
   {
     "prompt": "Is 7 an even number?"

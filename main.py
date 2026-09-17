@@ -23,6 +23,15 @@ def main():
             final_reponse.append(data)
             continue
         tool_call_str = generate_tool_call(prompt, model, fonction_allow, tools)
+        if tool_call_str == "error":
+            data = {
+                "prompt": prompt,
+                "error": "Prompt not fund function",
+            }
+            final_reponse.append(data)
+            print(data)
+
+            continue
         try:
             tool_call_dict = json.loads(tool_call_str)
             data = {
