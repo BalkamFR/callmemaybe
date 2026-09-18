@@ -50,6 +50,15 @@ uv run python -m src \
     --model Qwen/Qwen3-0.6B
 ```
 
+### Using another model
+
+The `--model` flag lets you replace `Qwen/Qwen3-0.6B` with any other causal
+model loadable by `llm_sdk`, for example:
+
+```bash
+uv run python -m src --model Qwen/Qwen3-1.7B
+```
+
 ### Other Makefile targets
 
 ```bash
@@ -166,16 +175,19 @@ value.
 
 ## Performance Analysis
 
-- **Accuracy**: 100% on the prompts shared with
-  `data/correction/function_calling_corrections.json` (8/8), well above
-  the 90% target from the subject.
-- **Validity**: every generated output is valid, parseable JSON — no
-  syntax errors — because the JSON structure itself (braces, separators,
-  quotes) is written by the program, not sampled from the model.
-- **Speed**: the full 11-prompt test set, including loading the model,
-  runs in about 10-15 seconds on CPU, far under the 5-minute budget.
+- **Structural validity**: the braces, separators, and delimiting quotes of
+  the JSON structure are always written by the program itself, never
+  sampled from the model — which eliminates most JSON syntax errors that
+  free-form prompting would produce. A string's value, however, is still
+  freely generated text before being truncated: in the edge case where the
+  model never produces a closing quote within the allotted token budget,
+  the corresponding entry falls back to the error mechanism (`error` +
+  `raw_output`) instead of silently producing an invalid output.
+- **Speed**: each prompt is processed in a few seconds on CPU, well under
+  the 5-minute budget set by the subject for the full test set.
 - **Reliability**: generation is deterministic (greedy decoding via
-  `argmax`, no sampling), so results are stable across repeated runs.
+  `argmax`, no sampling), so results are stable across repeated runs for a
+  given prompt and function set.
 
 ## Testing Strategy
 
@@ -187,8 +199,9 @@ including CLI argument parsing and error handling on malformed input files
 (`test_parsing.py`).
 
 End-to-end validation is done by running the full pipeline against the
-provided `data/input/` files and comparing the output to
-`data/correction/function_calling_corrections.json`.
+provided `data/input/` files and manually inspecting the generated output
+file (`data/output/function_calling_results.json`) to check that each
+entry contains the right function name and parameters.
 
 ## Resources
 
@@ -206,6 +219,3 @@ provided `data/input/` files and comparing the output to
 - **Writing part of the unit test suite** (`tests/`) for the pure,
   model-free functions.
 - **Writing this documentation.**
-
-Every change was reviewed, tested against the provided data, and
-understood before being kept.

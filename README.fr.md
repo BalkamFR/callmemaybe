@@ -52,6 +52,15 @@ uv run python -m src \
     --model Qwen/Qwen3-0.6B
 ```
 
+### Utiliser un autre modèle
+
+Le flag `--model` permet de remplacer `Qwen/Qwen3-0.6B` par tout autre modèle
+causal compatible chargeable par `llm_sdk`, par exemple :
+
+```bash
+uv run python -m src --model Qwen/Qwen3-1.7B
+```
+
 ### Autres cibles du Makefile
 
 ```bash
@@ -176,19 +185,21 @@ la boucle ne soit jamais interrompue prématurément sur une valeur légitime.
 
 ## Analyse de performance
 
-- **Précision** : 100% sur les prompts partagés avec
-  `data/correction/function_calling_corrections.json` (8/8), largement
-  au-dessus de l'objectif de 90% fixé par le sujet.
-- **Validité** : chaque sortie générée est un JSON valide et parseable —
-  aucune erreur de syntaxe — car la structure JSON elle-même (accolades,
-  séparateurs, guillemets) est écrite par le programme, pas échantillonnée
-  depuis le modèle.
-- **Vitesse** : l'ensemble des 11 prompts de test, chargement du modèle
-  inclus, s'exécute en environ 10 à 15 secondes sur CPU, très en dessous
-  du budget de 5 minutes.
+- **Validité structurelle** : les accolades, séparateurs et guillemets de
+  délimitation de la structure JSON sont toujours écrits par le programme
+  lui-même, jamais échantillonnés depuis le modèle — ce qui élimine la
+  plupart des erreurs de syntaxe JSON qu'un prompting libre produirait.
+  La valeur d'une chaîne reste toutefois du texte librement généré par le
+  modèle avant d'être tronquée : dans le cas limite où le modèle ne produit
+  jamais de guillemet de fermeture dans le budget de tokens alloué, l'entrée
+  correspondante bascule sur le mécanisme de repli (`error` +
+  `raw_output`) plutôt que de produire une sortie invalide silencieuse.
+- **Vitesse** : chaque prompt est traité en quelques secondes sur CPU,
+  largement sous le budget de 5 minutes fixé par le sujet pour l'ensemble
+  des prompts de test.
 - **Fiabilité** : la génération est déterministe (décodage glouton via
   `argmax`, pas d'échantillonnage), donc les résultats sont stables d'une
-  exécution à l'autre.
+  exécution à l'autre pour un même prompt et un même jeu de fonctions.
 
 ## Stratégie de test
 
@@ -201,8 +212,10 @@ arguments CLI et la gestion d'erreurs sur des fichiers d'entrée malformés
 (`test_parsing.py`).
 
 La validation de bout en bout se fait en exécutant le pipeline complet sur
-les fichiers fournis dans `data/input/` et en comparant la sortie à
-`data/correction/function_calling_corrections.json`.
+les fichiers fournis dans `data/input/` et en inspectant manuellement le
+fichier de sortie généré (`data/output/function_calling_results.json`)
+pour vérifier que chaque entrée contient le bon nom de fonction et les
+bons paramètres.
 
 ## Ressources
 
@@ -221,6 +234,3 @@ les fichiers fournis dans `data/input/` et en comparant la sortie à
 - **Écriture d'une partie de la suite de tests unitaires** (`tests/`) pour
   les fonctions pures ne dépendant pas du modèle.
 - **Rédaction de cette documentation.**
-
-Chaque changement a été relu, testé contre les données fournies, et
-compris avant d'être conservé.
