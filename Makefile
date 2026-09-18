@@ -1,3 +1,6 @@
+export HF_HOME := /goinfre/$(USER)/hf-cache
+export UV_CACHE_DIR := /goinfre/$(USER)/uv-cache
+
 UV := uv
 
 .PHONY: all install run debug test clean lint lint-strict
